@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: sportshub-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sportshub
+      POSTGRES_PASSWORD: sportshubpassword
+      POSTGRES_DB: sportshub_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sportshub -d sportshub_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sportshub-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Optional Ollama container (if not using local host Ollama service)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sportshub-ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    profiles:
+      - ollama
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_models:
+
